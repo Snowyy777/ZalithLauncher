@@ -41,15 +41,35 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-            - name: Use LWJGL 3.3.3
+                  - name: Replace LWJGL with 3.3.3
         run: |
           python3 - <<'PY'
+          import urllib.request
           from pathlib import Path
 
-          p = Path("jre_lwjgl3glfw/build.gradle.kts")
-          s = p.read_text()
-          s = s.replace('Manifest-Version" to "3.3.6"', 'Manifest-Version" to "3.3.3"')
-          p.write_text(s)
+          version = "3.3.3"
+          base = f"https://repo1.maven.org/maven2/org/lwjgl/"
+
+          libs = [
+              "lwjgl",
+              "lwjgl-glfw",
+              "lwjgl-jemalloc",
+              "lwjgl-openal",
+              "lwjgl-opengl",
+              "lwjgl-stb",
+              "lwjgl-tinyfd",
+              "lwjgl-freetype",
+              "lwjgl-nanovg",
+          ]
+
+          dest = Path("jre_lwjgl3glfw/libs")
+
+          for lib in libs:
+              url = f"{base}{lib}/{version}/{lib}-{version}.jar"
+              output = dest / f"{lib}.jar"
+              print(f"Baixando {url}")
+              urllib.request.urlretrieve(url, output)
+
           PY
 
           chmod +x gradlew
